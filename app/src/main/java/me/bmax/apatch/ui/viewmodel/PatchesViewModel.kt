@@ -56,7 +56,7 @@ class PatchesViewModel : ViewModel() {
     var bootDev by mutableStateOf("")
     var kimgInfo by mutableStateOf(KPModel.KImgInfo("", false))
     var kpimgInfo by mutableStateOf(KPModel.KPImgInfo("", "", "", "", ""))
-    var superkey by mutableStateOf(APApplication.superKey)
+    var superkey by mutableStateOf("")
     var existedExtras = mutableStateListOf<KPModel.IExtraInfo>()
     var newExtras = mutableStateListOf<KPModel.IExtraInfo>()
     var newExtrasFileName = mutableListOf<String>()
@@ -115,7 +115,7 @@ class PatchesViewModel : ViewModel() {
                     kpimg["version"].toString(),
                     kpimg["compile_time"].toString(),
                     kpimg["config"].toString(),
-                    APApplication.superKey,     // current key
+                    "",     // manager no longer keeps a separate superkey
                     kpimg["root_superkey"].toString(),   // empty
                 )
             } else {
@@ -349,7 +349,7 @@ class PatchesViewModel : ViewModel() {
         val suFile = File("/system/bin/su")
         return suFile.exists() && suFile.canExecute()
     }
-    fun doPatch(mode: PatchMode) {
+    fun doPatch(mode: PatchMode, useKey: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             patching = true
             Log.d(TAG, "starting patching...")
@@ -372,22 +372,24 @@ class PatchesViewModel : ViewModel() {
             // adapt for 0.10.7 and lower KP
             var isKpOld = false
 
+            val finalKey = if (useKey && superkey.isNotEmpty()) superkey else "su"
+
             if (mode == PatchMode.PATCH_AND_INSTALL || mode == PatchMode.INSTALL_TO_NEXT_SLOT) {
 
-                val KPCheck = shell.newJob().add("truncate $superkey -Z u:r:magisk:s0 -c whoami").exec()
+                val KPCheck = shell.newJob().add("truncate ${APApplication.superKey} -Z u:r:magisk:s0 -c whoami").exec()
 
                 if (KPCheck.isSuccess && !isSuExecutable()) {
                     patchCommand.addAll(0, listOf("truncate", APApplication.superKey, "-Z", APApplication.MAGISK_SCONTEXT, "-c"))
-                    patchCommand.addAll(listOf(superkey, srcBoot.path, "true"))
+                    patchCommand.addAll(listOf(finalKey, srcBoot.path, "true"))
                 } else {
                     patchCommand = mutableListOf("./busybox", "sh", "boot_patch.sh")
-                    patchCommand.addAll(listOf(superkey, srcBoot.path, "true"))
+                    patchCommand.addAll(listOf(finalKey, srcBoot.path, "true"))
                     isKpOld = true
                 }
 
             } else {
                 patchCommand.addAll(0, listOf("sh", "-c"))
-                patchCommand.addAll(listOf(superkey, srcBoot.path))
+                patchCommand.addAll(listOf(finalKey, srcBoot.path))
             }
 
             for (i in 0..<newExtrasFileName.size) {

@@ -141,6 +141,8 @@
     <string name="patch_item_extra_args">参数：</string>
     <string name="patch_item_extra_event">事件:</string>
     <string name="patch_item_skey">超级密钥</string>
+    <string name="patch_custom_superkey">自定义超级密钥</string>
+    <string name="patch_custom_superkey_summary">你仍可以设置超级密钥来管理 Root 以及内核，管理器已由内置签名授权。</string>
     <string name="patch_item_existed_extra_kpm">已嵌入的</string>
     <string name="patch_item_set_skey_label">超级密钥长度应在 8-63 个字符，包含数字和字母，但不包含特殊字符。</string>
     <string name="patch_mode_uninstall_patch">还原初始内核镜像</string>

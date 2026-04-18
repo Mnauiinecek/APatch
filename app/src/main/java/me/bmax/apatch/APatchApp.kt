@@ -186,8 +186,6 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler {
                 Log.d(TAG, "state: " + _kpStateLiveData.value)
                 if (!ready) return
 
-                APatchKeyHelper.writeSPSuperKey(value)
-
                 thread {
                     val rc = Natives.su(0, null)
                     if (!rc) {
@@ -272,8 +270,7 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler {
         // TODO: 2. remove all usage of superkey
         sharedPreferences = getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
         APatchKeyHelper.setSharedPreferences(sharedPreferences)
-        val savedKey = APatchKeyHelper.readSPSuperKey()
-        superKey = if (savedKey.isNullOrEmpty()) "su" else savedKey
+        superKey = "su"
 
         okhttpClient =
             OkHttpClient.Builder().cache(Cache(File(cacheDir, "okhttp"), 10 * 1024 * 1024))
