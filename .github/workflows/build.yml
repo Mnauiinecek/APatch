@@ -66,24 +66,15 @@ jobs:
           workspaces: apd
           cache-targets: false
 
-      - name: Write key
-        run: |
-          if [ -n "${{ secrets.SIGNING_KEY }}" ]; then
-            echo "KEYSTORE_PASSWORD=${{ secrets.KEY_STORE_PASSWORD }}" >> gradle.properties
-            echo "KEY_ALIAS=${{ secrets.ALIAS }}" >> gradle.properties
-            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> gradle.properties
-            echo "KEYSTORE_FILE=key.jks" >> gradle.properties
-            echo "${{ secrets.SIGNING_KEY }}" | base64 -d > key.jks
-          fi
-
       - name: Build with Gradle
         run: |
-          echo "org.gradle.parallel=true" >> gradle.properties
-          echo "org.gradle.vfs.watch=true" >> gradle.properties
-          echo "org.gradle.jvmargs=-Xmx2048m" >> gradle.properties
-          echo "android.native.buildOutput=verbose" >> gradle.properties
-          sed -i '/org.gradle.configuration-cache/d' gradle.properties
-          ./gradlew assembleRelease
+          echo 'org.gradle.parallel=true' >> gradle.properties
+          echo 'org.gradle.vfs.watch=true' >> gradle.properties
+          echo 'org.gradle.jvmargs=-Xmx2048m' >> gradle.properties
+          echo 'android.native.buildOutput=verbose' >> gradle.properties
+          sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
+          ./gradlew clean assembleDebug assembleRelease
+          echo "BUILD_TOOL_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)" >> $GITHUB_ENV
 
       - name: Sign Release
         env:
